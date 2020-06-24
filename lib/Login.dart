@@ -645,7 +645,7 @@ class MainState extends State<Main>{
                                   Container(
                                     child: Card(
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                                      color: Colors.black,
+                                      color: Colors.black38,
                                       elevation: 10,
                                       child: Container(
                                         alignment: Alignment.center,
