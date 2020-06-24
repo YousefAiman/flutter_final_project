@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flappy_search_bar/flappy_search_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'Customer.dart';
 import 'Product.dart';
+import 'database_control.dart';
 
 void main() => {
 runApp(MaterialApp(title: 'Named Routes Demo', initialRoute: '/signup', routes: {
@@ -48,32 +50,30 @@ class MyCustomFormState extends State<MyCustomForm> {
   GlobalKey<FormState> formKey = GlobalKey();
   saveMyForm(){
     if(!formKey.currentState.validate()){
-
       return ;
     }
 
-    Navigator.push(context,
-        MaterialPageRoute(
-            builder: (context) => Main()
-        )
-    );
-
+//    Navigator.push(context,
+//        MaterialPageRoute(
+//            builder: (context) => Main()
+//        )
+//    );
     formKey.currentState.save();
-//    DbHelper.dbHelper.database;
-//    email = email.replaceAll("@","");
-//    DbHelper.dbHelper.retrieveUserData(email,password).then((onValue){
-//      if(onValue){
-//        Navigator.push(context,
-//            MaterialPageRoute(
-//                builder: (context) => Main()
-//            )
-//        );
-//      }else{
-//        Scaffold.of(context).showSnackBar(SnackBar(content: Text(
-//            'Either your email or password are incoreect'
-//        )));
-//      }
-//    });
+    DbHelper.dbHelper.database;
+    email = email.replaceAll("@","");
+    DbHelper.dbHelper.retrieveUserData(email,password).then((onValue){
+      if(onValue){
+        Navigator.push(context,
+            MaterialPageRoute(
+                builder: (context) => Main()
+            )
+        );
+      }else{
+        Scaffold.of(context).showSnackBar(SnackBar(content: Text(
+            'Either your email or password are incorrect'
+        )));
+      }
+    });
   }
   @override
   Widget build(BuildContext context) {
@@ -176,7 +176,6 @@ class MyCustomFormState extends State<MyCustomForm> {
                         child: FlatButton(
                             onPressed: () {
                               saveMyForm();
-
                             },
                             child: Text(
                               "Log in",
@@ -187,12 +186,12 @@ class MyCustomFormState extends State<MyCustomForm> {
 
         GestureDetector(
             onTap:(){
-
-              Navigator.push(context,
-                  MaterialPageRoute(
-                      builder: (context) => Signup()
-                  )
-              );
+        saveMyForm();
+//              Navigator.push(context,
+//                  MaterialPageRoute(
+//                      builder: (context) => Signup()
+//                  )
+//              );
 
 //            Navigator.pushNamed(context,'/signup',arguments:<String,String> {'title': "fdssdf"});
             },
@@ -291,6 +290,16 @@ class SignupFormState extends State<SignupForm> {
     if(!formKey.currentState.validate()){
       return;
     }
+    formKey.currentState.save();
+    DbHelper.dbHelper.database;
+    email = email.replaceAll("@","");
+    Customer customer =  Customer.fromJson({
+      DbHelper.usersColumnUserName:name,
+      DbHelper.usersColumnPasswordName:password,
+      DbHelper.usersColumnEmailName:email,
+      DbHelper.usersColumnTypeName:dropdownValue,
+    });
+    DbHelper.dbHelper.insertNewUserRaw(customer);
   }
   @override
   Widget build(BuildContext context) {
@@ -488,11 +497,11 @@ class SignupFormState extends State<SignupForm> {
                                   )
                               ),GestureDetector(
                                   onTap: (){
-                                    Navigator.push(context,
-                                        MaterialPageRoute(
-                                            builder: (context) => MyApp()
-                                        )
-                                    );
+//                                    Navigator.push(context,
+////                                        MaterialPageRoute(
+////                                            builder: (context) => MyApp()
+////                                        )
+////                                    );
 //                                   Navigator.pushNamed(context,'/login',arguments:<String,String> {'title': "fdssdf"}
 //                                    );
                                   },
@@ -525,23 +534,12 @@ class SignupFormState extends State<SignupForm> {
 List<Product> products = new List();
 
 class Main extends StatefulWidget{
-  CollectionReference productsCollection  = Firestore.instance.collection("products");
-
   @override
   State<StatefulWidget> createState() {
-     productsCollection.getDocuments().then((QuerySnapshot querySnapshot){
-      querySnapshot.documents.forEach((document) {
-        Product product = Product.fromMap(document.data);
-        products.add(product);
-      });
-      return MainState();
-    });
-
-
+     return MainState();
   }
 }
 class MainState extends State<Main>{
-
 //  getData() async {
 //
 //    await productsCollection.getDocuments().then((QuerySnapshot querySnapshot){
@@ -576,13 +574,29 @@ class MainState extends State<Main>{
 //    getData();
 //    super.initState();
 //  }
-
   List itemList = [
     'Card Text 2 Line 1',
   ];
+  CollectionReference productsCollection  = Firestore.instance.collection("products");
   GlobalKey<FormState> formKey = GlobalKey();
-  @override
 
+  @override
+  initState() {
+    super.initState();
+
+    new Future<String>.delayed(new Duration(seconds: 2), () => '["123", "456", "789"]').then((String value) {
+      setState(() async {
+       await productsCollection.getDocuments().then((QuerySnapshot querySnapshot){
+          querySnapshot.documents.forEach((document) {
+            Product product = Product.fromMap(document.data);
+            products.add(product);
+          });
+        });
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
 //    WidgetsBinding.instance
 //        .addPostFrameCallback((_) =>
@@ -638,20 +652,20 @@ class MainState extends State<Main>{
                                         alignment: Alignment.center,
                                         width: 150,
                                         height: 100,
-                                        child: Text('Woman', style: TextStyle(fontSize: 15)),
+                                        child: Text('Woman', style: TextStyle(fontSize: 15,color: Colors.white)),
                                       ),
                                     ),
                                   ),
                                   Container(
                                     child: Card(
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                                      color: Colors.black38,
+                                      color: Colors.pink,
                                       elevation: 10,
                                       child: Container(
                                         alignment: Alignment.center,
                                         width: 150,
                                         height: 100,
-                                        child: Text('Man', style: TextStyle(fontSize: 15)),
+                                        child: Text('Man', style: TextStyle(fontSize: 15,color: Colors.white)),
                                       ),
                                     ),
                                   ),
@@ -665,7 +679,7 @@ class MainState extends State<Main>{
                                         width: 150,
                                         height: 100,
 //                          child:  Image.asset('images/image1.jpg'),
-                                        child: Text('Kids', style: TextStyle(fontSize: 15)),
+                                        child: Text('Kids', style: TextStyle(fontSize: 15,color: Colors.white)),
                                       ),
                                     ),
                                   ),
@@ -692,18 +706,15 @@ class MainState extends State<Main>{
                                               height: 200,
                                               child:
                                               Card(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(5.0),
-                                                  ),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                                                   margin: EdgeInsets.all(10),
                                                   semanticContainer: true,
                                                   clipBehavior: Clip.antiAliasWithSaveLayer,
                                                   child:GestureDetector(
                                                       onTap: ()=>{
-                                                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                                                        Navigator.push(context, MaterialPageRoute(builder: (context) {
                                                        return ProductDetails(products.elementAt(index));
-                                                      }))
-                                                      }
+                                                      }))}
                                                       ,child: Container(
                                                       child: Image(
                                                           fit: BoxFit.fill,
@@ -711,11 +722,11 @@ class MainState extends State<Main>{
                                               )
                                           )
                                           ,Container(
-                                            child: Text(products.elementAt(index).price, style: TextStyle(fontSize: 19,)),
+                                            child: Text('\$'+products.elementAt(index).price, style: TextStyle(fontSize: 19,)),
                                             alignment: Alignment.bottomLeft,
                                             margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 5),
                                           ),Container(
-                                            child: Text(products.elementAt(index).name, style: TextStyle(fontSize: 19,)),
+                                            child: Text(products.elementAt(index).category+" "+products.elementAt(index).name, style: TextStyle(fontSize: 19,)),
                                             alignment: Alignment.bottomLeft,
                                             margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 5),
                                           )
@@ -1073,7 +1084,6 @@ class ProductDetailsState extends State<ProductDetails> {
             ),
 
           ),
-
           bottomNavigationBar:
           Container(
             padding: EdgeInsets.only(top: 50),
@@ -1082,7 +1092,7 @@ class ProductDetailsState extends State<ProductDetails> {
               onPressed: (){
                 setState(() {
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return Cart();
+                    return Cart(recordObject);
                   }));
                 });
               },
@@ -1098,39 +1108,38 @@ class ProductDetailsState extends State<ProductDetails> {
           body: Builder(builder: (context){
             return Column(children: <Widget>[
               Container(
-                height: 200,
-                child: new ListView(
-                  children: <Widget>[
-
-                  ],
-                ),
-              ),
-
+                  margin: const EdgeInsets.all(10),
+                  child: Image(
+                      fit: BoxFit.fill,
+                      image: AssetImage('images/cover.jpg'))),
               Container(
                 child: Text(recordObject.name, style: TextStyle(fontSize: 25,)),
                 alignment: Alignment.topLeft,
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               ),
 
               Container(
-                child: Text('\$ '+recordObject.price, style: TextStyle(fontSize: 20, color: Colors.blue)),
+                child: Text('\$ '+recordObject.price, style: TextStyle(fontSize: 17, color: Colors.blue)),
                 alignment: Alignment.topLeft,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+              ),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 10),
+                  height:1.0,
+                  color:Colors.grey,),
 
-                margin: const EdgeInsets.symmetric(horizontal: 20),
+              Container(
+                child: Text('Description', style: TextStyle(fontSize: 18,)),
+                padding: EdgeInsets.only(top: 10),
+                alignment: Alignment.topLeft,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
               ),
 
               Container(
-                child: Text('Description', style: TextStyle(fontSize: 20,)),
-                padding: EdgeInsets.only(top: 50),
+                child: Text(recordObject.desc, style: TextStyle(fontSize: 16,)),
+                padding: EdgeInsets.only(top: 10),
                 alignment: Alignment.topLeft,
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-              ),
-
-              Container(
-                child: Text(recordObject.desc, style: TextStyle(fontSize: 20,)),
-                padding: EdgeInsets.only(top: 20),
-                alignment: Alignment.topLeft,
-                margin: const EdgeInsets.symmetric(horizontal: 20),
+                margin: const EdgeInsets.symmetric(horizontal: 10),
               ),
             ],);
 /*            return Scaffold(
@@ -1182,31 +1191,19 @@ class ProductDetailsState extends State<ProductDetails> {
 }
 
 class Cart extends StatefulWidget{
+
+  final Product recordObject;
+  const Cart(this.recordObject);
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
-    return CartState();
+    return CartState(recordObject);
   }
 }
 class CartState extends State<Cart>{
   // ignore: non_constant_identifier_names
+  Product recordObject;
+  CartState(this.recordObject);
   var product_on_the_cart = [
-    {
-      "name":"Ahmed",
-      "image":"images/image1.jpg",
-      "price": 34.00,
-      "size":"M",
-      "color":"Red",
-      "quantity":1
-    },
-    {
-      "name":"Mohammad",
-      "image":"images/image2.jpg",
-      "price": 49.00,
-      "size":"XL",
-      "color":"Black",
-      "quantity":1
-    },
     {
       "name":"Ahmed",
       "image":"images/image1.jpg",
@@ -1271,7 +1268,9 @@ class CartState extends State<Cart>{
               ),
               onPressed: (){
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
-//                  return ProductDetails();
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return ProductDetails(recordObject);
+                  }));
                 }));
               },
             ),
@@ -1279,20 +1278,15 @@ class CartState extends State<Cart>{
           ),
           bottomNavigationBar:
           Container(
-            padding: EdgeInsets.only(top: 50),
+            margin: EdgeInsets.only(left:10,right:10),
             child: RaisedButton(
               child: Text('Continue', style: TextStyle(color: Colors.white)),
               onPressed: (){
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
 //                  return CreateAddress();
-
                 }));
               },
               color: Colors.blue,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 140,
-                vertical: 18,
-              ),
             ),
           ),
           body: Builder(builder: (context){
@@ -1333,10 +1327,14 @@ class single_cart extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Card(
+    return Container(
+      height: 120,
+    child:Card(
       child: ListTile(
-        leading:  Image.asset('images/image1.jpg', width: 80, height: 80,),
-
+        leading:  Container(
+          height: 120,
+            child: Image.asset('images/cover.jpg', width: 70, height: 120,fit: BoxFit.fill)
+        ),
         title: new Text(prod_name),
         subtitle: new Column(children: <Widget>[
           new Row(children: <Widget>[
@@ -1348,7 +1346,6 @@ class single_cart extends StatelessWidget{
                 padding: const EdgeInsets.all(4),
                 child: new Text(prod_size, style: TextStyle(color: Colors.red),)
             ),
-
             Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 8, 8),
                 child: new Text('Color:')
@@ -1363,22 +1360,20 @@ class single_cart extends StatelessWidget{
               alignment: Alignment.topLeft,
               child: new Text('\$${prod_price}', style: TextStyle(color: Colors.blue, fontSize: 17 ,fontWeight: FontWeight.bold),)
           )
-
         ],),
-
         trailing: new Column(children: <Widget>[
           new IconButton(icon: Icon(Icons.arrow_drop_up),
               onPressed: (){}),
           new Text('1'),
           new IconButton(icon: Icon(Icons.arrow_drop_down),
-              padding: EdgeInsets.symmetric(vertical: 15),
+              padding: EdgeInsets.symmetric(vertical: 5),
               onPressed: (){}),
         ],),
       ),
 
 
 
-    );
+    ));
 
 
   }

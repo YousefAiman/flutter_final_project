@@ -15,10 +15,9 @@ class Main extends StatefulWidget{
 class MainState extends State<Main>{
   List itemList = [
     'Card Text 2 Line 1',
-
   ];
-  GlobalKey<FormState> formKey = GlobalKey();
 
+  GlobalKey<FormState> formKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
